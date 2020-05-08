@@ -1,8 +1,8 @@
 .. Images
 .. |scale| image:: images/scale.jpg
 
-Fledge Scale Filter
-===================
+Scale Filter
+============
 
 The *fledge-filter-scale* plugin is a simple filter that allows a scale factor and an offset to be applied to numerical data. It's primary uses are for adjusting values to match different measurement scales, for example converting temperatures from Centigrade to Fahrenheit or when a sensor reports a value in non-base units, e.g. 1/10th of a degree.
 
