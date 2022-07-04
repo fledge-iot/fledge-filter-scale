@@ -153,12 +153,17 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 
 	// Just get all the readings in the readingset
 	const vector<Reading *>& readings = ((ReadingSet *)readingSet)->getAllReadings();
+
+	AssetTracker *tracker = AssetTracker::getAssetTracker();
 	// Iterate over the readings
 	for (vector<Reading *>::const_iterator elem = readings.begin();
 						      elem != readings.end();
 						      ++elem)
 	{
-		AssetTracker::getAssetTracker()->addAssetTrackingTuple(info->configCatName, (*elem)->getAssetName(), string("Filter"));
+		if (tracker)
+		{
+			tracker->addAssetTrackingTuple(info->configCatName, (*elem)->getAssetName(), string("Filter"));
+		}
 		if (!match.empty())
 		{
 			string asset = (*elem)->getAssetName();
