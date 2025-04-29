@@ -19,6 +19,7 @@ extern "C" {
 	PLUGIN_HANDLE plugin_init(ConfigCategory* config,
 			  OUTPUT_HANDLE *outHandle,
 			  OUTPUT_STREAM output);
+	void plugin_shutdown(PLUGIN_HANDLE handle);
 	int called = 0;
 
 	void Handler(void *handle, READINGSET *readings)
@@ -48,6 +49,7 @@ TEST(SCALE, ScaleInteger)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -62,6 +64,10 @@ TEST(SCALE, ScaleInteger)
 	ASSERT_STREQ(outdp->getName().c_str(), "test");
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
 	ASSERT_EQ(outdp->getData().toDouble(), 4.0);
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 
@@ -85,6 +91,7 @@ TEST(SCALE, ScaleDouble)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -99,6 +106,10 @@ TEST(SCALE, ScaleDouble)
 	ASSERT_STREQ(outdp->getName().c_str(), "test");
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
 	ASSERT_EQ(outdp->getData().toDouble(), 3.0);
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 TEST(SCALE, ScaleDisabled)
@@ -120,6 +131,7 @@ TEST(SCALE, ScaleDisabled)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -134,6 +146,10 @@ TEST(SCALE, ScaleDisabled)
 	ASSERT_STREQ(outdp->getName().c_str(), "test");
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
 	ASSERT_EQ(outdp->getData().toInt(), 2);
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 TEST(SCALE, ScaleString)
@@ -156,6 +172,7 @@ TEST(SCALE, ScaleString)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -170,6 +187,10 @@ TEST(SCALE, ScaleString)
 	ASSERT_STREQ(outdp->getName().c_str(), "test");
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_STRING);
 	ASSERT_STREQ(outdp->getData().toStringValue().c_str(), "Untouched");
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 TEST(SCALE, ScaleMultiDP)
@@ -199,6 +220,7 @@ TEST(SCALE, ScaleMultiDP)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -228,6 +250,10 @@ TEST(SCALE, ScaleMultiDP)
 			ASSERT_EQ(outdp->getData().toDouble(), 20.0);
 		}
 	}
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 
@@ -259,6 +285,7 @@ TEST(SCALE, ScaleOffsetMultiDP)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -288,6 +315,10 @@ TEST(SCALE, ScaleOffsetMultiDP)
 			ASSERT_EQ(outdp->getData().toDouble(), 120.0);
 		}
 	}
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 TEST(SCALE, ScaleNegativeOffsetMultiDP)
@@ -318,6 +349,7 @@ TEST(SCALE, ScaleNegativeOffsetMultiDP)
 	readings->push_back(in);
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -347,6 +379,10 @@ TEST(SCALE, ScaleNegativeOffsetMultiDP)
 			ASSERT_EQ(outdp->getData().toDouble(), 14.0);
 		}
 	}
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
 
 TEST(SCALE, ScaleMatch)
@@ -385,6 +421,7 @@ TEST(SCALE, ScaleMatch)
 	readings->push_back(new Reading("untouched", datapoints1));
 
 	ReadingSet readingSet(readings);
+	delete readings;
 	plugin_ingest(handle, (READINGSET *)&readingSet);
 
 
@@ -439,4 +476,8 @@ TEST(SCALE, ScaleMatch)
 			}
 		}
 	}
+
+	delete outReadings;
+	delete config;
+	plugin_shutdown(handle);
 }
