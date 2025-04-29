@@ -216,6 +216,9 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 	// 3- pass newReadings to filter->m_func instead of readings if needed.
 	// With the value change we can pass same input readingset just modified
 	filter->m_func(filter->m_data, readingSet);
+
+	if (re)
+		delete re;
 }
 
 /**
