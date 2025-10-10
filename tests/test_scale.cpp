@@ -65,7 +65,6 @@ TEST(SCALE, ScaleInteger)
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
 	ASSERT_EQ(outdp->getData().toDouble(), 4.0);
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -107,7 +106,6 @@ TEST(SCALE, ScaleDouble)
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
 	ASSERT_EQ(outdp->getData().toDouble(), 3.0);
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -147,7 +145,6 @@ TEST(SCALE, ScaleDisabled)
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
 	ASSERT_EQ(outdp->getData().toInt(), 2);
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -188,7 +185,6 @@ TEST(SCALE, ScaleString)
 	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_STRING);
 	ASSERT_STREQ(outdp->getData().toStringValue().c_str(), "Untouched");
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -251,7 +247,6 @@ TEST(SCALE, ScaleMultiDP)
 		}
 	}
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -316,7 +311,6 @@ TEST(SCALE, ScaleOffsetMultiDP)
 		}
 	}
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -380,7 +374,6 @@ TEST(SCALE, ScaleNegativeOffsetMultiDP)
 		}
 	}
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }
@@ -477,7 +470,6 @@ TEST(SCALE, ScaleMatch)
 		}
 	}
 
-	delete outReadings;
 	delete config;
 	plugin_shutdown(handle);
 }

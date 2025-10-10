@@ -15,7 +15,7 @@ TEST(SCALE_INFO, PluginInfo)
 {
 	PLUGIN_INFORMATION *info = plugin_info();
 	ASSERT_STREQ(info->name, "scale");
-	ASSERT_EQ(info->type, PLUGIN_TYPE_FILTER);
+	ASSERT_STREQ(info->type, PLUGIN_TYPE_FILTER);
 }
 
 TEST(SCALE_INFO, PluginInfoConfigParse)
