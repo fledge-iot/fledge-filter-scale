@@ -140,6 +140,8 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 	{
 		offset = strtod(filter->getConfig().getValue("offset").c_str(), NULL);
 	}
+	bool integerFactors = (scaleFactor == floor(scaleFactor)) && (offset == floor(offset));
+
 	string match;
 	regex  *re = 0;
 	if (filter->getConfig().itemExists("match"))
@@ -189,13 +191,14 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 			if (value.getType() == DatapointValue::T_INTEGER)
 			{
 				double newValue = value.toInt() * scaleFactor + offset;
-				if (newValue == floor(newValue))
+
+				if (integerFactors)
 				{
-					value.setValue(newValue);
+					value.setValue((long)newValue);
 				}
 				else
 				{
-					value.setValue((long)newValue);
+					value.setValue(newValue);
 				}
 			}
 			else if (value.getType() == DatapointValue::T_FLOAT)

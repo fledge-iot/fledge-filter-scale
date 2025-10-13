@@ -62,13 +62,93 @@ TEST(SCALE, ScaleInteger)
 	ASSERT_EQ(points.size(), 1);
 	Datapoint *outdp = points[0];
 	ASSERT_STREQ(outdp->getName().c_str(), "test");
-	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
-	ASSERT_EQ(outdp->getData().toDouble(), 4.0);
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp->getData().toInt(), 4);
 
 	delete config;
 	plugin_shutdown(handle);
 }
 
+TEST(SCALE, ScaleFactorFloat)
+{
+	PLUGIN_INFORMATION *info = plugin_info();
+	ConfigCategory *config = new ConfigCategory("scale", info->config);
+	ASSERT_NE(config, (ConfigCategory *)NULL);
+	config->setItemsValueFromDefault();
+	ASSERT_EQ(config->itemExists("factor"), true);
+	config->setValue("factor", "1.9");
+	config->setValue("enable", "true");
+	ReadingSet *outReadings;
+	void *handle = plugin_init(config, &outReadings, Handler);
+	vector<Reading *> *readings = new vector<Reading *>;
+
+	long testValue = 2;
+	DatapointValue dpv(testValue);
+	Datapoint *value = new Datapoint("test", dpv);
+	Reading *in = new Reading("test", value);
+	readings->push_back(in);
+
+	ReadingSet readingSet(readings);
+	delete readings;
+	plugin_ingest(handle, (READINGSET *)&readingSet);
+
+
+	vector<Reading *>results = outReadings->getAllReadings();
+	ASSERT_EQ(results.size(), 1);
+	Reading *out = results[0];
+	ASSERT_STREQ(out->getAssetName().c_str(), "test");
+	ASSERT_EQ(out->getDatapointCount(), 1);
+	vector<Datapoint *> points = out->getReadingData();
+	ASSERT_EQ(points.size(), 1);
+	Datapoint *outdp = points[0];
+	ASSERT_STREQ(outdp->getName().c_str(), "test");
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
+	ASSERT_EQ(outdp->getData().toDouble(), 3.8);
+
+	delete config;
+	plugin_shutdown(handle);
+}
+
+TEST(SCALE, ScaleOffsetFloat)
+{
+	PLUGIN_INFORMATION *info = plugin_info();
+	ConfigCategory *config = new ConfigCategory("scale", info->config);
+	ASSERT_NE(config, (ConfigCategory *)NULL);
+	config->setItemsValueFromDefault();
+	ASSERT_EQ(config->itemExists("factor"), true);
+	config->setValue("factor", "2");
+	config->setValue("offset", "0.1");
+	config->setValue("enable", "true");
+	ReadingSet *outReadings;
+	void *handle = plugin_init(config, &outReadings, Handler);
+	vector<Reading *> *readings = new vector<Reading *>;
+
+	long testValue = 2;
+	DatapointValue dpv(testValue);
+	Datapoint *value = new Datapoint("test", dpv);
+	Reading *in = new Reading("test", value);
+	readings->push_back(in);
+
+	ReadingSet readingSet(readings);
+	delete readings;
+	plugin_ingest(handle, (READINGSET *)&readingSet);
+
+
+	vector<Reading *>results = outReadings->getAllReadings();
+	ASSERT_EQ(results.size(), 1);
+	Reading *out = results[0];
+	ASSERT_STREQ(out->getAssetName().c_str(), "test");
+	ASSERT_EQ(out->getDatapointCount(), 1);
+	vector<Datapoint *> points = out->getReadingData();
+	ASSERT_EQ(points.size(), 1);
+	Datapoint *outdp = points[0];
+	ASSERT_STREQ(outdp->getName().c_str(), "test");
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
+	ASSERT_EQ(outdp->getData().toDouble(), 4.1);
+
+	delete config;
+	plugin_shutdown(handle);
+}
 
 TEST(SCALE, ScaleDouble)
 {
@@ -242,8 +322,8 @@ TEST(SCALE, ScaleMultiDP)
 		}
 		else if (outdp->getName().compare("integer") == 0)
 		{
-			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
-			ASSERT_EQ(outdp->getData().toDouble(), 20.0);
+			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+			ASSERT_EQ(outdp->getData().toInt(), 20);
 		}
 	}
 
@@ -306,8 +386,8 @@ TEST(SCALE, ScaleOffsetMultiDP)
 		}
 		else if (outdp->getName().compare("integer") == 0)
 		{
-			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
-			ASSERT_EQ(outdp->getData().toDouble(), 120.0);
+			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+			ASSERT_EQ(outdp->getData().toInt(), 120);
 		}
 	}
 
@@ -369,8 +449,8 @@ TEST(SCALE, ScaleNegativeOffsetMultiDP)
 		}
 		else if (outdp->getName().compare("integer") == 0)
 		{
-			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_FLOAT);
-			ASSERT_EQ(outdp->getData().toDouble(), 14.0);
+			ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+			ASSERT_EQ(outdp->getData().toInt(), 14);
 		}
 	}
 
