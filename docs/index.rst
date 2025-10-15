@@ -12,7 +12,7 @@ When adding a scale filter to either the south service or north task, via the *A
 | |scale| |
 +---------+
 
-The configuration options supported by the scale filter are detailed in the table below
+The configuration options supported by the scale filter are detailed in the table below:
 
 +-----------------+------------------------------------------------------------------+
 | Setting         | Description                                                      |
@@ -21,8 +21,19 @@ The configuration options supported by the scale filter are detailed in the tabl
 +-----------------+------------------------------------------------------------------+
 | Constant Offset | A constant to add to all numeric values after applying the scale |
 +-----------------+------------------------------------------------------------------+
-| Asset filter    | This is useful when applying the filter in the north, it allows  |
-|                 | the filter to be applied only to those assets that match the     |
-|                 | regular expression given. If left blank then the filter is       |
-|                 | applied to all assets/                                           |
+| Asset filter    | A regular expression to apply to the asset name.                 |
+|                 | If configured, the filter will be applied only to those assets   |
+|                 | that match the expression.                                       |
+|                 | If blank, the filter will be applied to all assets.              |
+|                 | This is useful when applying the filter in the north.            |
 +-----------------+------------------------------------------------------------------+
+
+Output Data Types
+-----------------
+
+If filter input values are integers and the *Scale Factor* and *Constant Offset* are both integers, the outputs will be integers.
+
+If filter input values, *Scale Factor* or *Constant Offset* are floating point values, the outputs will be floating point values.
+
+For non-numeric input values, *Scale Factor* and *Constant Offset* cannot be applied.
+The filter output value will match the input value.
