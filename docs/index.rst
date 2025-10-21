@@ -27,6 +27,12 @@ The configuration options supported by the scale filter are detailed in the tabl
 |                 | If blank, the filter will be applied to all assets.              |
 |                 | This is useful when applying the filter in the north.            |
 +-----------------+------------------------------------------------------------------+
+| Datapoint filter| A regular expression to apply to the Datapoint name.                 |
+|                 | If configured, the filter will be applied only to those datapoints   |
+|                 | that match the expression.                                       |
+|                 | If blank, the filter will be applied to all datapoints.              |
+|                 | This is useful when applying the filter in the north.            |
++-----------------+------------------------------------------------------------------+
 
 Output Data Types
 -----------------

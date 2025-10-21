@@ -20,6 +20,7 @@
 #include <reading_set.h>
 #include <regex>
 #include <version.h>
+#include <logger.h>
 
 #define FILTER_NAME "scale"
 #define SCALE_FACTOR "100.0"
@@ -42,7 +43,11 @@
 			"\"match\" : {\"description\" : \"An optional regular expression to match in the asset name.\", " \
 				"\"type\": \"string\", " \
 				"\"default\": \"\", " \
-				"\"order\": \"3\", \"displayName\": \"Asset filter\"} }"
+				"\"order\": \"3\", \"displayName\": \"Asset filter\"}, " \
+			"\"datapoint_match\" : {\"description\" : \"An optional regular expression to match in the datapoint name.\", " \
+				"\"type\": \"string\", " \
+				"\"default\": \"\", " \
+				"\"order\": \"4\", \"displayName\": \"Datapoint filter\"} }"
 using namespace std;
 
 /**
@@ -147,7 +152,33 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 	if (filter->getConfig().itemExists("match"))
 	{
 		match = filter->getConfig().getValue("match");
-		re = new regex(match);
+		try
+		{
+			re = new regex(match);
+		}
+		catch(...)
+		{
+			Logger::getLogger()->error("invalid regular expression '%s' for asset name matching, ignoring it.", match.c_str());
+			filter->m_func(filter->m_data, readingSet);
+			return;
+		}
+	}
+
+	string datapoint_match;
+	regex  *dp_re = 0;
+	if (filter->getConfig().itemExists("datapoint_match"))
+	{
+		datapoint_match = filter->getConfig().getValue("datapoint_match");
+		try
+		{
+			dp_re = new regex(datapoint_match);
+		}
+		catch(...)
+		{
+			Logger::getLogger()->error("invalid regular expression '%s' for datapoint name matching, ignoring it.", datapoint_match.c_str());
+			filter->m_func(filter->m_data, readingSet);
+			return;
+		}
 	}
 
 	// 1- We might need to transform the inout readings set: example
@@ -162,10 +193,6 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 						      elem != readings.end();
 						      ++elem)
 	{
-		if (tracker)
-		{
-			tracker->addAssetTrackingTuple(info->configCatName, (*elem)->getAssetName(), string("Filter"));
-		}
 		if (!match.empty())
 		{
 			string asset = (*elem)->getAssetName();
@@ -174,11 +201,33 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 				continue;
 			}
 		}
+		else
+		{
+			Logger::getLogger()->warn("No asset name match configured");
+		}
+
+		if (tracker)
+		{
+			tracker->addAssetTrackingTuple(info->configCatName, (*elem)->getAssetName(), string("Filter"));
+		}
 		// Get a reading DataPoint
 		const vector<Datapoint *>& dataPoints = (*elem)->getReadingData();
 		// Iterate over the datapoints
 		for (vector<Datapoint *>::const_iterator it = dataPoints.begin(); it != dataPoints.end(); ++it)
 		{
+			if (!datapoint_match.empty())
+			{
+				string datapoint_name = (*it)->getName();
+				if (! regex_match(datapoint_name, *dp_re))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				Logger::getLogger()->warn("No datapoint match configured");
+			}
+
 			// Get the reference to a DataPointValue
 			DatapointValue& value = (*it)->getData();
 
@@ -222,6 +271,9 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 
 	if (re)
 		delete re;
+	
+	if (dp_re)
+		delete dp_re;
 }
 
 /**

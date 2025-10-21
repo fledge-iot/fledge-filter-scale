@@ -553,3 +553,180 @@ TEST(SCALE, ScaleMatch)
 	delete config;
 	plugin_shutdown(handle);
 }
+
+TEST(SCALE, ScaleSelectedAsset)
+{
+	PLUGIN_INFORMATION *info = plugin_info();
+	ConfigCategory *config = new ConfigCategory("scale", info->config);
+	ASSERT_NE(config, (ConfigCategory *)NULL);
+	config->setItemsValueFromDefault();
+	ASSERT_EQ(config->itemExists("factor"), true);
+	config->setValue("factor", "2");
+	config->setValue("match", "pressure"); //scale only of asset 'pressure'
+	config->setValue("enable", "true");
+	ReadingSet *outReadings;
+	void *handle = plugin_init(config, &outReadings, Handler);
+	vector<Reading *> *readings = new vector<Reading *>;
+
+	long testValue = 2;
+	DatapointValue dpv(testValue);
+	Datapoint *value = new Datapoint("temperature_val", dpv);
+	Reading *in = new Reading("temperature", value);
+	readings->push_back(in);
+
+	long testValue1 = 2;
+	DatapointValue dpv1(testValue1);
+	Datapoint *value1 = new Datapoint("pressure_val", dpv);
+	Reading *in1 = new Reading("pressure", value1);
+	readings->push_back(in1);
+
+	ReadingSet readingSet(readings);
+	delete readings;
+	plugin_ingest(handle, (READINGSET *)&readingSet);
+
+
+	vector<Reading *>results = outReadings->getAllReadings();
+	ASSERT_EQ(results.size(), 2);
+	
+	// First Asset
+	Reading *out = results[0];
+	ASSERT_STREQ(out->getAssetName().c_str(), "temperature");
+	ASSERT_EQ(out->getDatapointCount(), 1);
+	vector<Datapoint *> points = out->getReadingData();
+	ASSERT_EQ(points.size(), 1);
+	Datapoint *outdp = points[0];
+	ASSERT_STREQ(outdp->getName().c_str(), "temperature_val");
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp->getData().toInt(), 2); // No scaling is done for temperature asset
+
+	// Second Asset
+	Reading *out1 = results[1];
+	ASSERT_STREQ(out1->getAssetName().c_str(), "pressure");
+	ASSERT_EQ(out->getDatapointCount(), 1);
+	vector<Datapoint *> points1 = out1->getReadingData();
+	ASSERT_EQ(points1.size(), 1);
+	Datapoint *outdp1 = points1[0];
+	ASSERT_STREQ(outdp1->getName().c_str(), "pressure_val");
+	ASSERT_EQ(outdp1->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp1->getData().toInt(), 4); // scaled by factor 2 for for pressure asset
+
+	delete config;
+	plugin_shutdown(handle);
+}
+
+TEST(SCALE, ScaleSelectedDatapoint)
+{
+	PLUGIN_INFORMATION *info = plugin_info();
+	ConfigCategory *config = new ConfigCategory("scale", info->config);
+	ASSERT_NE(config, (ConfigCategory *)NULL);
+	config->setItemsValueFromDefault();
+	ASSERT_EQ(config->itemExists("factor"), true);
+	config->setValue("factor", "2");
+	config->setValue("match", "pump"); //scale only of asset 'pump'
+	config->setValue("datapoint_match", "pressure_valve"); //scale only of datapoint 'pressure_valve'
+	config->setValue("enable", "true");
+	ReadingSet *outReadings;
+	void *handle = plugin_init(config, &outReadings, Handler);
+	vector<Reading *> *readings = new vector<Reading *>;
+
+	// Datapoint #1 : pressure_valve
+	vector<Datapoint *> datapoints;
+	long testValue = 300;
+	DatapointValue dpv(testValue);
+	datapoints.emplace_back(new Datapoint("pressure_valve", dpv));
+
+	// Datapoint #2 : temperature_valve
+	long testValue1 = 200;
+	DatapointValue dpv1(testValue1);
+	datapoints.emplace_back(new Datapoint("temperature_valve", dpv1));
+
+	Reading *in = new Reading("pump", datapoints);
+	readings->push_back(in);
+
+
+	ReadingSet readingSet(readings);
+	delete readings;
+	plugin_ingest(handle, (READINGSET *)&readingSet);
+
+
+	vector<Reading *>results = outReadings->getAllReadings();
+	ASSERT_EQ(results.size(), 1);
+	
+	Reading *out = results[0];
+	ASSERT_STREQ(out->getAssetName().c_str(), "pump");
+	ASSERT_EQ(out->getDatapointCount(), 2);
+	vector<Datapoint *> points = out->getReadingData();
+	ASSERT_EQ(points.size(), 2);
+	// First Datapoint
+	Datapoint *outdp = points[0];
+	ASSERT_STREQ(outdp->getName().c_str(), "pressure_valve");
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp->getData().toInt(), 600); // scaled by factor 2  pressure_valve data point
+
+	//Second Datapoint
+	Datapoint *outdp1 = points[1];
+	ASSERT_STREQ(outdp1->getName().c_str(), "temperature_valve");
+	ASSERT_EQ(outdp1->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp1->getData().toInt(), 200); // No scaling is done for temperature_valve data point
+
+	delete config;
+	plugin_shutdown(handle);
+}
+
+TEST(SCALE, DatapointRegularExpressionMatch)
+{
+	PLUGIN_INFORMATION *info = plugin_info();
+	ConfigCategory *config = new ConfigCategory("scale", info->config);
+	ASSERT_NE(config, (ConfigCategory *)NULL);
+	config->setItemsValueFromDefault();
+	ASSERT_EQ(config->itemExists("factor"), true);
+	config->setValue("factor", "2");
+	config->setValue("match", "pump"); //scale only of asset 'pump'
+	config->setValue("datapoint_match", ".*_valve"); //scale only of datapoint which has '_valve' suffix
+	config->setValue("enable", "true");
+	ReadingSet *outReadings;
+	void *handle = plugin_init(config, &outReadings, Handler);
+	vector<Reading *> *readings = new vector<Reading *>;
+
+	// Datapoint #1 : pressure_valve
+	vector<Datapoint *> datapoints;
+	long testValue = 300;
+	DatapointValue dpv(testValue);
+	datapoints.emplace_back(new Datapoint("pressure_valve", dpv));
+
+	// Datapoint #2 : temperature_valve
+	long testValue1 = 200;
+	DatapointValue dpv1(testValue1);
+	datapoints.emplace_back(new Datapoint("temperature_valve", dpv1));
+
+	Reading *in = new Reading("pump", datapoints);
+	readings->push_back(in);
+
+
+	ReadingSet readingSet(readings);
+	delete readings;
+	plugin_ingest(handle, (READINGSET *)&readingSet);
+
+	vector<Reading *>results = outReadings->getAllReadings();
+	ASSERT_EQ(results.size(), 1);
+	
+	Reading *out = results[0];
+	ASSERT_STREQ(out->getAssetName().c_str(), "pump");
+	ASSERT_EQ(out->getDatapointCount(), 2);
+	vector<Datapoint *> points = out->getReadingData();
+	ASSERT_EQ(points.size(), 2);
+	// First Datapoint
+	Datapoint *outdp = points[0];
+	ASSERT_STREQ(outdp->getName().c_str(), "pressure_valve");
+	ASSERT_EQ(outdp->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp->getData().toInt(), 600); // scaled by factor 2  pressure_valve data point
+
+	//Second Datapoint
+	Datapoint *outdp1 = points[1];
+	ASSERT_STREQ(outdp1->getName().c_str(), "temperature_valve");
+	ASSERT_EQ(outdp1->getData().getType(), DatapointValue::T_INTEGER);
+	ASSERT_EQ(outdp1->getData().toInt(), 400); // scaled by factor 2  temperature_valve data point
+
+	delete config;
+	plugin_shutdown(handle);
+}
