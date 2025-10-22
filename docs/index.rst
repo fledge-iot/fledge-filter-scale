@@ -14,25 +14,25 @@ When adding a scale filter to either the south service or north task, via the *A
 
 The configuration options supported by the scale filter are detailed in the table below:
 
-+-----------------+------------------------------------------------------------------+
-| Setting         | Description                                                      |
-+=================+==================================================================+
-| Scale Factor    | The scale factor to multiply the numeric values by               |
-+-----------------+------------------------------------------------------------------+
-| Constant Offset | A constant to add to all numeric values after applying the scale |
-+-----------------+------------------------------------------------------------------+
-| Asset filter    | A regular expression to apply to the asset name.                 |
-|                 | If configured, the filter will be applied only to those assets   |
-|                 | that match the expression.                                       |
-|                 | If blank, the filter will be applied to all assets.              |
-|                 | This is useful when applying the filter in the north.            |
-+-----------------+------------------------------------------------------------------+
-| Datapoint filter| A regular expression to apply to the Datapoint name.                 |
-|                 | If configured, the filter will be applied only to those datapoints   |
-|                 | that match the expression.                                       |
-|                 | If blank, the filter will be applied to all datapoints.              |
-|                 | This is useful when applying the filter in the north.            |
-+-----------------+------------------------------------------------------------------+
++-----------------+-------------------------------------------------------------------+
+| Setting         | Description                                                       |
++=================+===================================================================+
+| Scale Factor    | The scale factor to multiply the numeric values by                |
++-----------------+-------------------------------------------------------------------+
+| Constant Offset | A constant to add to all numeric values after applying the scale  |
++-----------------+-------------------------------------------------------------------+
+| Asset filter    | A regular expression to apply to the asset name.                  |
+|                 | If configured, the filter will be applied only to those assets    |
+|                 | that match the expression.                                        |
+|                 | If blank, the filter will be applied to all assets.               |
+|                 | This is useful when applying the filter in the north.             |
++-----------------+-------------------------------------------------------------------+
+| Datapoint filter| A regular expression to apply to the Datapoint name.              |
+|                 | If configured, the filter will be applied only to those datapoints|
+|                 | that match the expression.                                        |
+|                 | If blank, the filter will be applied to all datapoints.           |
+|                 | This is useful when applying the filter in the north.             |
++-----------------+-------------------------------------------------------------------+
 
 Output Data Types
 -----------------

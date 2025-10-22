@@ -177,6 +177,8 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 		{
 			Logger::getLogger()->error("invalid regular expression '%s' for datapoint name matching, ignoring it.", datapoint_match.c_str());
 			filter->m_func(filter->m_data, readingSet);
+			if (re)
+				delete re;
 			return;
 		}
 	}
@@ -203,7 +205,7 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 		}
 		else
 		{
-			Logger::getLogger()->warn("No asset name match configured");
+			Logger::getLogger()->debug("No asset name match configured");
 		}
 
 		if (tracker)
@@ -225,7 +227,7 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 			}
 			else
 			{
-				Logger::getLogger()->warn("No datapoint match configured");
+				Logger::getLogger()->debug("No datapoint match configured");
 			}
 
 			// Get the reference to a DataPointValue
@@ -234,7 +236,7 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 			/*
 			 * Deal with the T_INTEGER and T_FLOAT types.
 			 * Try to preserve the type if possible but
-			 * if a flaoting point scale or offset is applied
+			 * if a floating point scale or offset is applied
 			 * then T_INTEGER values will turn into T_FLOAT.
 			 */
 			if (value.getType() == DatapointValue::T_INTEGER)
