@@ -203,10 +203,6 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 				continue;
 			}
 		}
-		else
-		{
-			Logger::getLogger()->debug("No asset name match configured");
-		}
 
 		if (tracker)
 		{
@@ -224,10 +220,6 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 				{
 					continue;
 				}
-			}
-			else
-			{
-				Logger::getLogger()->debug("No datapoint match configured");
 			}
 
 			// Get the reference to a DataPointValue
