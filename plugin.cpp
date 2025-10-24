@@ -67,6 +67,27 @@ static PLUGIN_INFORMATION info = {
 	DEFAULT_CONFIG	          // Default plugin configuration
 };
 
+// RAII helper: ensures m_func is always called
+class FilterCallbackGuard
+{
+public:
+	FilterCallbackGuard(FledgeFilter* f, READINGSET* rs)
+		: filter(f), readingSet(rs)
+	{}
+
+	~FilterCallbackGuard()
+	{
+		if (filter && filter->m_func)
+		{
+			filter->m_func(filter->m_data, readingSet);
+		}
+	}
+
+private:
+	FledgeFilter* filter;
+	READINGSET* readingSet;
+};
+
 typedef struct
 {
 	FledgeFilter	*handle;
@@ -122,11 +143,12 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 {
 	FILTER_INFO *info = (FILTER_INFO *) handle;
 	FledgeFilter* filter = info->handle;
+
+	FilterCallbackGuard guard(filter, readingSet);
 	
 	if (!filter->isEnabled())
 	{
 		// Current filter is not active: just pass the readings set
-		filter->m_func(filter->m_data, readingSet);
 		return;
 	}
 
@@ -159,7 +181,6 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 		catch(...)
 		{
 			Logger::getLogger()->error("invalid regular expression '%s' for asset name matching, ignoring it.", match.c_str());
-			filter->m_func(filter->m_data, readingSet);
 			return;
 		}
 	}
@@ -176,9 +197,7 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 		catch(...)
 		{
 			Logger::getLogger()->error("invalid regular expression '%s' for datapoint name matching, ignoring it.", datapoint_match.c_str());
-			filter->m_func(filter->m_data, readingSet);
-			if (re)
-				delete re;
+			delete re;
 			return;
 		}
 	}
@@ -261,13 +280,10 @@ void plugin_ingest(PLUGIN_HANDLE *handle,
 
 	// 3- pass newReadings to filter->m_func instead of readings if needed.
 	// With the value change we can pass same input readingset just modified
-	filter->m_func(filter->m_data, readingSet);
 
-	if (re)
-		delete re;
+	delete re;
 	
-	if (dp_re)
-		delete dp_re;
+	delete dp_re;
 }
 
 /**
